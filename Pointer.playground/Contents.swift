@@ -47,3 +47,36 @@ do {
     print("\(index), \(byte)")
   }
 }
+
+
+do {
+  print("raw pointer -> typed pointer")
+  let count = 4
+  let alignment = 1
+  let rawPointer = UnsafeMutableRawPointer.allocate(byteCount: count, alignment: alignment)
+  defer {
+    rawPointer.deallocate()
+  }
+
+  rawPointer.storeBytes(of: 1, as: UInt8.self)
+  rawPointer.advanced(by: 1).storeBytes(of: 1, as: UInt8.self)
+  rawPointer.advanced(by: 2).storeBytes(of: 0, as: UInt8.self)
+  rawPointer.advanced(by: 3).storeBytes(of: 0, as: UInt8.self)
+
+  // 对转换后的类型操作，是可以影响之前的数据的，也就是临时的格式 type converting
+  var typedPointer :UnsafeMutablePointer<UInt32> = rawPointer.bindMemory(to: UInt32.self, capacity: 1)
+
+  // 一个数字代表，4个bit
+  typedPointer.pointee = 0x00000201
+
+  let bufferPointer = UnsafeBufferPointer(start: typedPointer, count: 1)
+  for (index, byte) in bufferPointer.enumerated() {
+    print("\(index), \(byte)")
+  }
+
+  let rawBuffer = UnsafeRawBufferPointer(start: rawPointer, count: count)
+  for (index, byte) in rawBuffer.enumerated() {
+    print("\(index), \(byte)")
+  }
+
+}
